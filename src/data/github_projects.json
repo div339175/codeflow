@@ -1,0 +1,222 @@
+[
+  {
+    "id": "gh-zustand",
+    "source": "GitHub",
+    "title": "Zustand",
+    "tagline": "Bear necessities for state management in React",
+    "stars": "48.2k",
+    "license": "MIT",
+    "topic": "State Management · React · TypeScript",
+    "tags": ["React", "State Management", "TypeScript"],
+    "description": "Zustand is a small, fast and scalable bearbones state-management solution using simplified flux principles. It has a comfy API based on hooks, isn't boilerplatey or opinionated, and solves common issues such as the zombie child problem, react concurrency, and context loss across mixed renderers.",
+    "architecture": "Zustand is built around a vanilla JavaScript store powered by closures and listeners (`Set<Listener>`). React hook integration uses `useSyncExternalStoreWithSelector` for tearing-free concurrent rendering and selective subscription, ensuring components only re-render when their selected slice changes.",
+    "features": [
+      "Zero boilerplate — create stores in 5 lines of code",
+      "Transient updates without triggering React re-renders",
+      "Redux devtools and persistence middlewares built-in",
+      "Full TypeScript inference without code generation"
+    ],
+    "codeSnippet": "import { create } from 'zustand';\n\ninterface BearState {\n  bears: number;\n  increasePopulation: () => void;\n  removeAllBears: () => void;\n}\n\nexport const useBearStore = create<BearState>((set) => ({\n  bears: 0,\n  increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),\n  removeAllBears: () => set({ bears: 0 }),\n}));\n\n// Usage in component with automatic atomic selector\nfunction BearCounter() {\n  const bears = useBearStore((state) => state.bears);\n  return <h1>{bears} around here ...</h1>;\n}",
+    "codeSnippetTitle": "Store Definition and Component Selector",
+    "language": "TypeScript",
+    "sourceUrl": "https://github.com/pmndrs/zustand"
+  },
+  {
+    "id": "gh-fastify",
+    "source": "GitHub",
+    "title": "Fastify",
+    "tagline": "Fast and low overhead web framework for Node.js",
+    "stars": "32.4k",
+    "license": "MIT",
+    "topic": "Backend Framework · Node.js · High Performance",
+    "tags": ["Node.js", "Web Framework", "TypeScript"],
+    "description": "An extremely fast and low-overhead web framework for Node.js. Fastify provides high performance, extensible plugin architecture, automatic schema-based serialization with fast-json-stringify, and integrated TypeScript support.",
+    "architecture": "Fastify achieves industry-leading throughput using Radix Tree routing (find-my-way) for O(1) route lookups, schema validation using Ajv, and just-in-time string compilation using fast-json-stringify to serialize responses up to 2x faster than JSON.stringify.",
+    "features": [
+      "Highly performant: handles up to 75,000 requests/sec",
+      "JSON Schema validation & compiled serializer",
+      "Encapsulated plugin hierarchy (avoids global state collisions)",
+      "Built-in Pino logger integration for blazing fast structured logging"
+    ],
+    "codeSnippet": "import Fastify from 'fastify';\n\nconst server = Fastify({\n  logger: true,\n});\n\nserver.get('/ping', async (request, reply) => {\n  return { status: 'healthy', timestamp: Date.now() };\n});\n\nconst start = async () => {\n  try {\n    await server.listen({ port: 3000 });\n  } catch (err) {\n    server.log.error(err);\n    process.exit(1);\n  }\n};\nstart();",
+    "codeSnippetTitle": "Fastify Server with Structured Logging",
+    "language": "TypeScript",
+    "sourceUrl": "https://github.com/fastify/fastify"
+  },
+  {
+    "id": "gh-ripgrep",
+    "source": "GitHub",
+    "title": "ripgrep (rg)",
+    "tagline": "Ultra-fast line-oriented search tool combining grep speed with ack/ag usability",
+    "stars": "45.1k",
+    "license": "MIT / UNLICENSE",
+    "topic": "CLI Tools · Rust · Search Engine",
+    "tags": ["Rust", "CLI", "Search"],
+    "description": "ripgrep is a line-oriented search tool that recursively searches the current directory for a regex pattern. By default, ripgrep respects gitignore rules and automatically skips hidden files/directories and binary files, delivering unmatched search speeds across massive codebases.",
+    "architecture": "Implemented in Rust on top of the `regex` crate and memory-mapped file access. It utilizes SIMD-accelerated substring search (using Teddy / AVX2 / SSE4.2), multi-threaded directory walking with lock-free task queues, and zero-allocation buffer streaming.",
+    "features": [
+      "SIMD-accelerated regex matcher",
+      "Parallel recursive directory traversal with gitignore filtration",
+      "Searches compressed files (.zip, .gz, .xz) natively",
+      "Memory efficient: avoids buffering whole files in RAM"
+    ],
+    "codeSnippet": "use grep_regex::RegexMatcher;\nuse grep_searcher::Searcher;\nuse grep_searcher::sinks::UTF8;\n\nfn main() -> Result<(), Box<dyn std::error::Error>> {\n    let matcher = RegexMatcher::new(r\"fn\\s+[a-zA-Z0-9_]+\")?;\n    let mut searcher = Searcher::new();\n    \n    searcher.search_path(&matcher, \"src/main.rs\", UTF8(|line_num, line| {\n        println!(\"{}: {}\", line_num, line.trim());\n        Ok(true)\n    }))?;\n    Ok(())\n}",
+    "codeSnippetTitle": "Grep Searcher Engine Integration",
+    "language": "Rust",
+    "sourceUrl": "https://github.com/BurntSushi/ripgrep"
+  },
+  {
+    "id": "gh-redis",
+    "source": "GitHub",
+    "title": "Redis",
+    "tagline": "In-memory database that persists on disk with versatile data structures",
+    "stars": "65.8k",
+    "license": "RSALv2 / SSPLv1",
+    "topic": "Databases · In-Memory · C",
+    "tags": ["C", "Database", "Cache", "Key-Value"],
+    "description": "Redis is an open source, in-memory data store used by millions of developers as a database, cache, streaming engine, and message broker. It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, and geospatial indexes.",
+    "architecture": "Redis utilizes a single-threaded event loop driven by I/O multiplexing (`epoll` on Linux, `kqueue` on BSD/macOS) to process millions of operations per second with sub-millisecond latencies, avoiding lock contention and context-switching overhead.",
+    "features": [
+      "Sub-millisecond latency for typical read/write commands",
+      "Rich native data structures: Sorted Sets, HyperLogLog, Streams",
+      "RDB snapshots and AOF (Append-Only File) persistence engines",
+      "Master-replica asynchronous replication with automatic failover"
+    ],
+    "codeSnippet": "/* Core Redis Server Event Loop Handler in C */\nint processCommand(client *c) {\n    if (!strcasecmp(c->argv[0]->ptr, \"quit\")) {\n        addReply(c, shared.ok);\n        return C_ERR;\n    }\n    \n    struct redisCommand *cmd = lookupCommand(c->argv[0]->ptr);\n    if (!cmd) {\n        addReplyErrorFormat(c, \"unknown command '%s'\", (char*)c->argv[0]->ptr);\n        return C_OK;\n    }\n    \n    c->cmd = cmd;\n    cmd->proc(c); /* Execute command handler */\n    return C_OK;\n}",
+    "codeSnippetTitle": "Redis Command Dispatch Routine",
+    "language": "C++",
+    "sourceUrl": "https://github.com/redis/redis"
+  },
+  {
+    "id": "gh-tauri",
+    "source": "GitHub",
+    "title": "Tauri",
+    "tagline": "Build smaller, faster, and more secure desktop & mobile apps with web frontends",
+    "stars": "84.3k",
+    "license": "MIT / Apache-2.0",
+    "topic": "Desktop Apps · Rust · Webview",
+    "tags": ["Rust", "Desktop", "Webview", "Cross-Platform"],
+    "description": "Tauri is an app construction toolkit that lets you build desktop and mobile applications using web frontend technologies (React, Vue, Svelte) coupled with a secure, lightweight native backend written in Rust.",
+    "architecture": "Unlike Electron which bundles the entire Chromium engine and Node.js runtime (resulting in 100MB+ executables), Tauri leverages the operating system's native webview (WebKit on macOS/Linux, WebView2 on Windows) and provides an IPC bridge to a compiled Rust core.",
+    "features": [
+      "Tiny bundle footprint (under 3MB binary size)",
+      "Zero Chromium overhead and minimal memory consumption",
+      "Granular security permissions & CSP isolation",
+      "Native cross-platform OS notifications, filesystem, and shell APIs"
+    ],
+    "codeSnippet": "#[tauri::command]\nfn calculate_fibonacci(n: u32) -> u64 {\n    match n {\n        0 => 0,\n        1 => 1,\n        _ => {\n            let mut a = 0;\n            let mut b = 1;\n            for _ in 2..=n {\n                let temp = a + b;\n                a = b;\n                b = temp;\n            }\n            b\n        }\n    }\n}\n\nfn main() {\n    tauri::Builder::default()\n        .invoke_handler(tauri::generate_handler![calculate_fibonacci])\n        .run(tauri::generate_context!())\n        .expect(\"error while running tauri application\");\n}",
+    "codeSnippetTitle": "Tauri Rust Command with Frontend IPC Handler",
+    "language": "Rust",
+    "sourceUrl": "https://github.com/tauri-apps/tauri"
+  },
+  {
+    "id": "gh-excalidraw",
+    "source": "GitHub",
+    "title": "Excalidraw",
+    "tagline": "Virtual whiteboard for sketching hand-drawn like diagrams",
+    "stars": "83.6k",
+    "license": "MIT",
+    "topic": "Whiteboard · Canvas · React",
+    "tags": ["React", "Canvas", "Rough.js", "Collaboration"],
+    "description": "Excalidraw is an open-source virtual collaborative whiteboard tool that lets you easily sketch diagrams that have a hand-drawn feel. It offers end-to-end encryption for multi-user collaboration and exports to SVG/PNG.",
+    "architecture": "Excalidraw renders elements onto an HTML5 `<canvas>` using `Rough.js` to draw sketchy jittered lines. It maintains an immutable linear scene graph of elements with collision detection algorithms for selecting, rotating, and connecting arrows to geometry.",
+    "features": [
+      "Hand-drawn sketchy aesthetic using algorithmic jitter",
+      "End-to-end encrypted real-time multi-peer collaboration via WebSockets",
+      "Infinite 2D canvas with pan, zoom, and geometric snapping",
+      "Zero third-party tracking; works entirely offline"
+    ],
+    "codeSnippet": "import { RoughCanvas } from 'roughjs/bin/canvas';\n\nexport const renderElement = (\n  element: ExcalidrawElement,\n  rc: RoughCanvas,\n  context: CanvasRenderingContext2D\n) => {\n  switch (element.type) {\n    case 'rectangle':\n      rc.rectangle(element.x, element.y, element.width, element.height, {\n        stroke: element.strokeColor,\n        fill: element.backgroundColor,\n        roughness: 1.5,\n        bowing: 1,\n      });\n      break;\n    case 'arrow':\n      // Draw curvy directional bezier path with arrowhead\n      break;\n  }\n};",
+    "codeSnippetTitle": "Canvas Element Renderer with Rough.js",
+    "language": "TypeScript",
+    "sourceUrl": "https://github.com/excalidraw/excalidraw"
+  },
+  {
+    "id": "gh-gin",
+    "source": "GitHub",
+    "title": "Gin Web Framework",
+    "tagline": "HTTP web framework written in Go featuring Martini-like API with 40x speed",
+    "stars": "78.4k",
+    "license": "MIT",
+    "topic": "Backend Framework · Go · REST API",
+    "tags": ["Go", "HTTP", "REST", "Performance"],
+    "description": "Gin is an HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance — up to 40 times faster. If you need smashing performance, get yourself some Gin.",
+    "architecture": "Gin uses a custom HttpRouter based on a Radix Tree (compact trie prefix tree) which yields zero memory allocation routing and lightning-fast route matching. Middleware chaining is executed via an ordered slice of handler functions.",
+    "features": [
+      "Zero allocation Radix Tree routing",
+      "Middleware support (Logger, Recovery, Auth, CORS)",
+      "JSON, XML, and YAML data binding & validation",
+      "Crash-free recovery catches panics and writes HTTP 500 automatically"
+    ],
+    "codeSnippet": "package main\n\nimport (\n    \"net/http\"\n    \"github.com/gin-gonic/gin\"\n)\n\nfunc main() {\n    router := gin.Default()\n    \n    router.GET(\"/api/v1/health\", func(c *gin.Context) {\n        c.JSON(http.StatusOK, gin.H{\n            \"status\": \"healthy\",\n            \"engine\": \"gin\",\n        })\n    })\n    \n    router.Run(\":8080\")\n}",
+    "codeSnippetTitle": "Gin HTTP Router with Middleware Pipeline",
+    "language": "Go",
+    "sourceUrl": "https://github.com/gin-gonic/gin"
+  },
+  {
+    "id": "gh-neovim",
+    "source": "GitHub",
+    "title": "Neovim",
+    "tagline": "Vim-fork focused on extensibility and usability",
+    "stars": "82.9k",
+    "license": "Apache-2.0 / Vim",
+    "topic": "Text Editor · Lua · C · Modal Editing",
+    "tags": ["C", "Lua", "Vim", "Editor"],
+    "description": "Neovim is a hyperextensible Vim-based text editor built for modern developer workflows. It features a built-in Language Server Protocol (LSP) client, Treesitter syntax tree parsing, an asynchronous architecture, and first-class Lua configuration.",
+    "architecture": "Refactored C core decoupled from the UI. UIs (terminals, GUI frontends) connect as RPC clients. Neovim embeds the LuaJIT runtime for fast script execution and integrates libuv for non-blocking asynchronous event dispatch.",
+    "features": [
+      "Built-in LSP client for auto-complete and diagnostics",
+      "Treesitter AST integration for incremental syntax highlighting",
+      "Embedded LuaJIT scripting runtime",
+      "MessagePack RPC architecture enabling graphical remote UIs"
+    ],
+    "codeSnippet": "-- Neovim Native LSP Setup in Lua\nlocal lspconfig = require('lspconfig')\n\nlocal on_attach = function(client, bufnr)\n  local opts = { noremap = true, silent = true, buffer = bufnr }\n  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)\n  vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)\n  vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)\nend\n\nlspconfig.rust_analyzer.setup({\n  on_attach = on_attach,\n  settings = {\n    [\"rust-analyzer\"] = {\n      checkOnSave = { command = \"clippy\" },\n    }\n  }\n})",
+    "codeSnippetTitle": "Neovim Lua LSP Configuration",
+    "language": "TypeScript",
+    "sourceUrl": "https://github.com/neovim/neovim"
+  },
+  {
+    "id": "gh-axios",
+    "source": "GitHub",
+    "title": "Axios",
+    "tagline": "Promise based HTTP client for the browser and node.js",
+    "stars": "105.2k",
+    "license": "MIT",
+    "topic": "HTTP Client · JavaScript · Browser & Node",
+    "tags": ["JavaScript", "HTTP", "Promises", "Isomorphic"],
+    "description": "Axios is a simple promise-based HTTP client for the browser and node.js. Axios provides a simple to use library in a small package with an extensible interface.",
+    "architecture": "Axios operates isomorphically: in browser environments it abstracts `XMLHttpRequest` (or Fetch), while in Node.js it wraps the native `http` and `https` modules. Interceptors are executed in an asynchronous promise resolution pipeline.",
+    "features": [
+      "Make XMLHttpRequests from the browser and HTTP requests from node.js",
+      "Intercept request and response transformations",
+      "Automatic transform for JSON data",
+      "Client side support for protecting against XSRF"
+    ],
+    "codeSnippet": "import axios from 'axios';\n\nconst apiClient = axios.create({\n  baseURL: 'https://api.github.com',\n  timeout: 5000,\n  headers: { 'Accept': 'application/vnd.github.v3+json' }\n});\n\n// Request interceptor for token injection\napiClient.interceptors.request.use((config) => {\n  config.headers['X-Timestamp'] = Date.now().toString();\n  return config;\n});\n\nexport const fetchRepoStars = async (repo: string): Promise<number> => {\n  const response = await apiClient.get(`/repos/${repo}`);\n  return response.data.stargazers_count;\n};",
+    "codeSnippetTitle": "Axios Instance with Interceptors",
+    "language": "TypeScript",
+    "sourceUrl": "https://github.com/axios/axios"
+  },
+  {
+    "id": "gh-express",
+    "source": "GitHub",
+    "title": "Express.js",
+    "tagline": "Fast, unopinionated, minimalist web framework for Node.js",
+    "stars": "64.5k",
+    "license": "MIT",
+    "topic": "Web Framework · Node.js · Middleware",
+    "tags": ["Node.js", "Express", "Middleware", "JavaScript"],
+    "description": "Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications. It remains the foundation of modern Node.js server architectures.",
+    "architecture": "Express relies on an onion middleware pipeline: functions that receive `(req, res, next)`. Routing matches HTTP verbs and regex URL paths, invoking the stack of handlers until a response is sent or next(err) triggers error handling.",
+    "features": [
+      "Robust HTTP utility methods and routing system",
+      "Seamless middleware composition pipeline",
+      "Template engine integration (EJS, Pug, Handlebars)",
+      "Massive ecosystem of battle-tested plugins and middlewares"
+    ],
+    "codeSnippet": "const express = require('express');\nconst app = express();\n\napp.use(express.json());\n\n// Custom Request Logger Middleware\napp.use((req, res, next) => {\n  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);\n  next();\n});\n\napp.get('/api/users/:id', (req, res) => {\n  const userId = req.params.id;\n  res.json({ id: userId, name: `User_${userId}`, status: 'active' });\n});\n\napp.listen(3000, () => {\n  console.log('Server listening on port 3000');\n});",
+    "codeSnippetTitle": "Express Server with Middleware Pipeline",
+    "language": "JavaScript",
+    "sourceUrl": "https://github.com/expressjs/express"
+  }
+]

@@ -1,0 +1,350 @@
+[
+  {
+    "id": "tut-event-loop",
+    "source": "Tutorial",
+    "title": "Understanding the JavaScript Event Loop: Microtasks vs Macrotasks",
+    "category": "JavaScript & Runtime Internals",
+    "difficulty": "Medium",
+    "readTime": "6 min read",
+    "overview": "JavaScript is single-threaded, yet non-blocking. How does it handle I/O, timers, and promises without freezing the UI? The answer lies in the Event Loop, Call Stack, Microtask Queue, and Task (Macrotask) Queue.",
+    "keyConcepts": [
+      "Call Stack executes synchronous code to completion",
+      "Microtasks (Promises, queueMicrotask, MutationObserver) have higher priority",
+      "Macrotasks (setTimeout, setInterval, setImmediate, I/O) execute one per tick",
+      "All microtasks must drain completely before the next macrotask or repaint"
+    ],
+    "detailedExplanation": "When JavaScript executes, code runs synchronously on the Call Stack. When an asynchronous operation triggers (like a `fetch` or `setTimeout`), the browser API or Node.js background thread takes over. Upon completion, the callback is pushed to either the Microtask Queue or the Macrotask Queue.\n\nThe Event Loop constantly checks: Is the Call Stack empty? If yes, it executes ALL tasks in the Microtask Queue until empty. Only then does it pull ONE task from the Macrotask Queue, execute it, re-check microtasks, trigger any pending UI renders, and repeat.",
+    "codeSnippet": "console.log('1: Synchronous start');\n\nsetTimeout(() => {\n  console.log('2: Macrotask (setTimeout)');\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log('3: Microtask 1 (Promise)');\n}).then(() => {\n  console.log('4: Microtask 2 (Promise chaining)');\n});\n\nqueueMicrotask(() => {\n  console.log('5: Microtask 3 (queueMicrotask)');\n});\n\nconsole.log('6: Synchronous end');\n\n// Execution Output:\n// 1: Synchronous start\n// 6: Synchronous end\n// 3: Microtask 1 (Promise)\n// 5: Microtask 3 (queueMicrotask)\n// 4: Microtask 2 (Promise chaining)\n// 2: Macrotask (setTimeout)",
+    "codeSnippetTitle": "Event Loop Microtask Priority Demonstration",
+    "language": "JavaScript",
+    "complexity": {
+      "time": "O(1) per task dispatch",
+      "space": "O(N) queue memory"
+    },
+    "keyTakeaways": [
+      "Never starve the event loop with infinite microtask recursion",
+      "Promises always resolve before setTimeout(fn, 0)",
+      "UI rendering occurs between macrotask cycles after microtasks flush"
+    ],
+    "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop"
+  },
+  {
+    "id": "tut-go-concurrency",
+    "source": "Tutorial",
+    "title": "Go Concurrency: Building a Scalable Worker Pool with Channels",
+    "category": "Go & Systems Programming",
+    "difficulty": "Medium",
+    "readTime": "7 min read",
+    "overview": "Goroutines are lightweight threads managed by the Go runtime, costing only ~2KB of initial stack memory. A Worker Pool pattern limits concurrent goroutines to safely process a queue of jobs without exhausting system resources.",
+    "keyConcepts": [
+      "Buffered vs unbuffered channels",
+      "Fan-out distribution across worker goroutines",
+      "sync.WaitGroup for deterministic synchronization",
+      "Safe channel closure and range iteration"
+    ],
+    "detailedExplanation": "Spawning an unbounded number of goroutines for incoming requests can exhaust memory or database connection pools. A Worker Pool allocates a fixed number `W` of worker goroutines reading from a shared buffered `jobs` channel and writing to a `results` channel. `sync.WaitGroup` ensures the main routine waits until all jobs finish.",
+    "codeSnippet": "package main\n\nimport (\n    \"fmt\"\n    \"sync\"\n    \"time\"\n)\n\nfunc worker(id int, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) {\n    defer wg.Done()\n    for j := range jobs {\n        // Simulate unit of work\n        time.Sleep(time.Millisecond * 50)\n        results <- j * 2\n    }\n}\n\nfunc main() {\n    const numJobs = 10\n    const numWorkers = 3\n    \n    jobs := make(chan int, numJobs)\n    results := make(chan int, numJobs)\n    var wg sync.WaitGroup\n    \n    // Spawn worker pool\n    for w := 1; w <= numWorkers; w++ {\n        wg.Add(1)\n        go worker(w, jobs, results, &wg)\n    }\n    \n    // Send jobs\n    for j := 1; j <= numJobs; j++ {\n        jobs <- j\n    }\n    close(jobs)\n    \n    // Wait and harvest results\n    wg.Wait()\n    close(results)\n    \n    for res := range results {\n        fmt.Println(\"Result:\", res)\n    }\n}",
+    "codeSnippetTitle": "Worker Pool Implementation in Go",
+    "language": "Go",
+    "complexity": {
+      "time": "O(N / W) where N is jobs and W is worker count",
+      "space": "O(W) goroutine stacks"
+    },
+    "keyTakeaways": [
+      "Always close channels from the sender side",
+      "Buffered channels decouple producer throughput from consumer latency",
+      "Worker pools bound maximum CPU and memory utilization"
+    ],
+    "sourceUrl": "https://go.dev/tour/concurrency/1"
+  },
+  {
+    "id": "tut-rust-ownership",
+    "source": "Tutorial",
+    "title": "Rust Memory Safety: Ownership, Borrowing, and Lifetimes",
+    "category": "Rust & Systems Programming",
+    "difficulty": "Hard",
+    "readTime": "8 min read",
+    "overview": "Rust achieves memory safety without a garbage collector through its compile-time Ownership and Borrowing system. Understanding move semantics and reference lifetimes is the key to mastering Rust.",
+    "keyConcepts": [
+      "Each value in Rust has an owner variable",
+      "When the owner goes out of scope, the value is automatically dropped (RAII)",
+      "Either one mutable reference (&mut T) OR any number of immutable references (&T)",
+      "References must always be valid — no dangling pointers possible"
+    ],
+    "detailedExplanation": "In C/C++, manual memory management risks use-after-free, double-free, and memory leaks. In garbage-collected languages (Java, Go, JS), a runtime GC introduces pauses. Rust's compiler (the Borrow Checker) verifies memory lifetimes at compile time with zero runtime overhead.",
+    "codeSnippet": "fn main() {\n    let mut s = String::from(\"hello\");\n    \n    // Immutable borrows — multiple readers allowed\n    let r1 = &s;\n    let r2 = &s;\n    println!(\"Readers: {} and {}\", r1, r2);\n    // r1 and r2 are no longer used after this point (Non-Lexical Lifetimes)\n    \n    // Mutable borrow — exclusive writer\n    let r3 = &mut s;\n    r3.push_str(\", world!\");\n    println!(\"Mutated: {}\", r3);\n}\n\n// Lifetime parameter annotation ensures output reference lives as long as shortest input\nfn longest<'a>(x: &'a str, y: &'a str) -> &'a str {\n    if x.len() > y.len() {\n        x\n    } else {\n        y\n    }\n}",
+    "codeSnippetTitle": "Rust Borrowing Rules & Lifetime Annotation",
+    "language": "Rust",
+    "complexity": {
+      "time": "Zero runtime cost (100% verified at compile-time)",
+      "space": "O(1) overhead"
+    },
+    "keyTakeaways": [
+      "Aliasing XOR Mutability: data can be shared or mutated, never both simultaneously",
+      "Lifetimes do not change how long values live; they describe relationships between scopes",
+      "RAII ensures deterministically timed resource deallocation"
+    ],
+    "sourceUrl": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html"
+  },
+  {
+    "id": "tut-rate-limiter",
+    "source": "Tutorial",
+    "title": "Designing a Distributed Token Bucket Rate Limiter",
+    "category": "System Design & Architecture",
+    "difficulty": "Hard",
+    "readTime": "8 min read",
+    "overview": "Rate limiters protect APIs against denial-of-service, brute force attacks, and cascading failures. The Token Bucket algorithm offers the ideal balance between memory efficiency and burst tolerance.",
+    "keyConcepts": [
+      "Token bucket holds up to capacity C tokens",
+      "Tokens replenish at a constant refill rate R tokens/sec",
+      "Each request consumes 1 token; if empty, return HTTP 429",
+      "Lazy refill calculation avoids running background timer loops"
+    ],
+    "detailedExplanation": "Instead of running a continuous background timer to add tokens every millisecond (which scales poorly for millions of users), calculate token refill lazily on-demand upon each incoming request: `newTokens = (now - lastRefill) * refillRate`. Update the bucket state atomically.",
+    "codeSnippet": "export class TokenBucketRateLimiter {\n  private capacity: number;\n  private refillRatePerSec: number;\n  private tokens: number;\n  private lastRefillTimestamp: number;\n\n  constructor(capacity: number, refillRatePerSec: number) {\n    this.capacity = capacity;\n    this.refillRatePerSec = refillRatePerSec;\n    this.tokens = capacity;\n    this.lastRefillTimestamp = Date.now();\n  }\n\n  public allowRequest(tokensRequested = 1): boolean {\n    this.refill();\n    \n    if (this.tokens >= tokensRequested) {\n      this.tokens -= tokensRequested;\n      return true; // Request accepted\n    }\n    \n    return false; // Rate limit exceeded (HTTP 429)\n  }\n\n  private refill(): void {\n    const now = Date.now();\n    const elapsedSec = (now - this.lastRefillTimestamp) / 1000;\n    const tokensToAdd = elapsedSec * this.refillRatePerSec;\n    \n    this.tokens = Math.min(this.capacity, this.tokens + tokensToAdd);\n    this.lastRefillTimestamp = now;\n  }\n}",
+    "codeSnippetTitle": "Token Bucket Rate Limiter with Lazy Calculation",
+    "language": "TypeScript",
+    "complexity": {
+      "time": "O(1) per check",
+      "space": "O(1) per user bucket"
+    },
+    "keyTakeaways": [
+      "Lazy refill eliminates background timer overhead",
+      "In distributed environments, use Redis Lua scripts for atomic token evaluation",
+      "Always return `Retry-After` header when rate limiting"
+    ],
+    "sourceUrl": "https://en.wikipedia.org/wiki/Token_bucket"
+  },
+  {
+    "id": "tut-lru-cache",
+    "source": "Tutorial",
+    "title": "Implementing a High-Performance LRU Cache from Scratch",
+    "category": "Data Structures & Algorithms",
+    "difficulty": "Medium",
+    "readTime": "6 min read",
+    "overview": "A Least Recently Used (LRU) Cache discards the least recently accessed items first when reaching capacity. Combining a Hash Map with a Doubly Linked List achieves O(1) time complexity for both `get` and `put` operations.",
+    "keyConcepts": [
+      "Hash Map provides O(1) key-to-node lookup",
+      "Doubly Linked List allows O(1) node deletion and relocation to head",
+      "Dummy head and dummy tail sentinel nodes eliminate edge condition checks",
+      "Evict node before dummy tail when size exceeds capacity"
+    ],
+    "detailedExplanation": "A Hash Map by itself cannot maintain chronological access order. An Array maintains order but requires O(N) shifts on deletion. A Doubly Linked List allows any middle node to be extracted and moved to the head in O(1) time if we have direct node pointer reference.",
+    "codeSnippet": "class DNode {\n  key: number;\n  val: number;\n  prev: DNode | null = null;\n  next: DNode | null = null;\n  constructor(key = 0, val = 0) {\n    this.key = key;\n    this.val = val;\n  }\n}\n\nexport class LRUCache {\n  private capacity: number;\n  private map = new Map<number, DNode>();\n  private head = new DNode();\n  private tail = new DNode();\n\n  constructor(capacity: number) {\n    this.capacity = capacity;\n    this.head.next = this.tail;\n    this.tail.prev = this.head;\n  }\n\n  get(key: number): number {\n    const node = this.map.get(key);\n    if (!node) return -1;\n    this.moveToHead(node);\n    return node.val;\n  }\n\n  put(key: number, val: number): void {\n    let node = this.map.get(key);\n    if (node) {\n      node.val = val;\n      this.moveToHead(node);\n    } else {\n      node = new DNode(key, val);\n      this.map.set(key, node);\n      this.addToHead(node);\n      if (this.map.size > this.capacity) {\n        const lru = this.tail.prev!;\n        this.removeNode(lru);\n        this.map.delete(lru.key);\n      }\n    }\n  }\n\n  private removeNode(node: DNode) {\n    node.prev!.next = node.next;\n    node.next!.prev = node.prev;\n  }\n\n  private addToHead(node: DNode) {\n    node.next = this.head.next;\n    node.prev = this.head;\n    this.head.next!.prev = node;\n    this.head.next = node;\n  }\n\n  private moveToHead(node: DNode) {\n    this.removeNode(node);\n    this.addToHead(node);\n  }\n}",
+    "codeSnippetTitle": "O(1) LRU Cache with Sentinel Linked List",
+    "language": "TypeScript",
+    "complexity": {
+      "time": "O(1) for both get and put operations",
+      "space": "O(capacity) for hash map and node pointers"
+    },
+    "keyTakeaways": [
+      "Dummy head and tail nodes avoid null-pointer checks",
+      "Store the key inside the node so eviction knows which Map entry to delete",
+      "Ideal foundation for in-memory caching tiers"
+    ],
+    "sourceUrl": "https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)"
+  },
+  {
+    "id": "tut-react-perf",
+    "source": "Tutorial",
+    "title": "Optimizing React Rendering: useMemo, useCallback, and Fiber Reconciliation",
+    "category": "React & Frontend Architecture",
+    "difficulty": "Medium",
+    "readTime": "7 min read",
+    "overview": "React's Virtual DOM diffing (Fiber) is fast, but unnecessary component re-renders can degrade framerates. Learn when to memoize, how referential equality triggers renders, and how to maintain steady 60fps animations.",
+    "keyConcepts": [
+      "Component renders when state, props, or parent re-renders",
+      "useCallback preserves function reference identity across renders",
+      "useMemo caches expensive computation results between renders",
+      "React.memo performs shallow prop comparison on child components"
+    ],
+    "detailedExplanation": "Every time a component re-renders, inline functions and object literals receive fresh memory references (`{} !== {}`). When passed to memoized children, this breaks `React.memo` shallow comparison. Use `useCallback` to stabilize event handlers and `useMemo` to cache heavy calculations.",
+    "codeSnippet": "import React, { useState, useMemo, useCallback } from 'react';\n\ninterface ListItemProps {\n  item: string;\n  onDelete: (item: string) => void;\n}\n\n// React.memo skips re-rendering if props are referentially identical\nconst ListItem = React.memo(({ item, onDelete }: ListItemProps) => {\n  return (\n    <li className=\"flex justify-between py-1\">\n      <span>{item}</span>\n      <button onClick={() => onDelete(item)}>Delete</button>\n    </li>\n  );\n});\n\nexport function ItemList() {\n  const [items, setItems] = useState<string[]>(['Rust', 'Go', 'TypeScript']);\n  const [query, setQuery] = useState('');\n\n  // Stable callback reference\n  const handleDelete = useCallback((toDelete: string) => {\n    setItems((prev) => prev.filter((i) => i !== toDelete));\n  }, []);\n\n  // Filtered list only recalculates when items or query changes\n  const filtered = useMemo(() => {\n    return items.filter((i) => i.toLowerCase().includes(query.toLowerCase()));\n  }, [items, query]);\n\n  return (\n    <div>\n      <input value={query} onChange={(e) => setQuery(e.target.value)} />\n      <ul>\n        {filtered.map((item) => (\n          <ListItem key={item} item={item} onDelete={handleDelete} />\n        ))}\n      </ul>\n    </div>\n  );\n}",
+    "codeSnippetTitle": "Referential Stability with Memoization",
+    "language": "TypeScript",
+    "complexity": {
+      "time": "O(1) render skip when props match",
+      "space": "O(1) closure cache memory"
+    },
+    "keyTakeaways": [
+      "Don't over-memoize trivial primitives; memoization has memory and comparison cost",
+      "Always stabilize callbacks passed to React.memo child components",
+      "Use keys with unique stable IDs, never array indices"
+    ],
+    "sourceUrl": "https://react.dev/reference/react/useMemo"
+  },
+  {
+    "id": "tut-python-asyncio",
+    "source": "Tutorial",
+    "title": "Python Asyncio Internals: Coroutines, Tasks, and Non-Blocking I/O",
+    "category": "Python & Asynchronous Programming",
+    "difficulty": "Medium",
+    "readTime": "6 min read",
+    "overview": "Python's `asyncio` library provides concurrent code execution using cooperative multitasking and the async/await syntax on a single thread.",
+    "keyConcepts": [
+      "Coroutines declared with async def return coroutine objects",
+      "await pauses coroutine execution until future completes, yielding to event loop",
+      "asyncio.gather runs multiple coroutines concurrently",
+      "Do NOT run CPU-bound blocking code directly on the event loop"
+    ],
+    "detailedExplanation": "Unlike OS threads which are preemptively scheduled by the operating system kernel, asyncio uses cooperative multitasking. Coroutines yield control voluntarily at `await` expression boundaries. For CPU-heavy work, delegate to `asyncio.to_thread` or `ProcessPoolExecutor`.",
+    "codeSnippet": "import asyncio\nimport aiohttp\n\nasync def fetch_status(session: aiohttp.ClientSession, url: str) -> dict:\n    async with session.get(url) as response:\n        return {\"url\": url, \"status\": response.status}\n\nasync def main():\n    urls = [\n        \"https://httpbin.org/delay/1\",\n        \"https://httpbin.org/status/200\",\n        \"https://httpbin.org/status/404\",\n    ]\n    \n    async with aiohttp.ClientSession() as session:\n        # Schedule concurrent network requests\n        tasks = [fetch_status(session, url) for url in urls]\n        results = await asyncio.gather(*tasks)\n        \n        for res in results:\n            print(f\"{res['url']} -> {res['status']}\")\n\nif __name__ == \"__main__\":\n    asyncio.run(main())",
+    "codeSnippetTitle": "Concurrent HTTP Requests with Asyncio and Aiohttp",
+    "language": "Python",
+    "complexity": {
+      "time": "O(max(latency)) concurrent completion",
+      "space": "O(N) coroutine frame objects"
+    },
+    "keyTakeaways": [
+      "asyncio is ideal for high-concurrency I/O-bound workloads",
+      "Never call `time.sleep()` inside async code; use `await asyncio.sleep()`",
+      "Use `asyncio.TaskGroup` in Python 3.11+ for structured concurrency"
+    ],
+    "sourceUrl": "https://docs.python.org/3/library/asyncio.html"
+  },
+  {
+    "id": "tut-database-indexing",
+    "source": "Tutorial",
+    "title": "Database Storage Engines: B-Trees vs Log-Structured Merge (LSM) Trees",
+    "category": "Database Architecture & Storage",
+    "difficulty": "Hard",
+    "readTime": "8 min read",
+    "overview": "Relational databases like PostgreSQL and MySQL InnoDB utilize B+ Trees, while high-throughput write stores like Cassandra and RocksDB use LSM Trees. Here is how they differ under the hood.",
+    "keyConcepts": [
+      "B+ Tree: balanced tree optimized for disk pages with O(log N) read and write",
+      "LSM Tree: appends writes to memory MemTable, flushes sequentially to immutable SSTables",
+      "B+ Trees optimize for read latency and range queries",
+      "LSM Trees maximize write throughput by converting random writes into sequential writes"
+    ],
+    "detailedExplanation": "Hard drives and SSDs provide significantly higher throughput for sequential writes than random in-place updates. B+ Trees update disk pages in-place, requiring random I/O and write-ahead logging (WAL). LSM Trees append to an in-memory red-black tree (MemTable) and a sequential WAL, achieving immense write speeds. Background compaction merges SSTables and applies tombstones.",
+    "codeSnippet": "-- PostgreSQL B-Tree Index Demonstration\nCREATE TABLE user_events (\n    id BIGSERIAL PRIMARY KEY,\n    user_id INT NOT NULL,\n    event_type VARCHAR(50) NOT NULL,\n    created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Composite B-Tree Index covering user and timestamp\nCREATE INDEX idx_user_events_user_time \nON user_events (user_id, created_at DESC);\n\n-- EXPLAIN ANALYZE proves Index Scan takes O(log N)\nEXPLAIN ANALYZE\nSELECT * FROM user_events\nWHERE user_id = 42\nORDER BY created_at DESC\nLIMIT 10;",
+    "codeSnippetTitle": "PostgreSQL Composite Indexing Optimization",
+    "language": "C++",
+    "complexity": {
+      "time": "B+ Tree: O(log N) read/write; LSM: O(1) write, O(log N) read",
+      "space": "O(N) disk storage with index overhead"
+    },
+    "keyTakeaways": [
+      "Use B+ Tree indexes for balanced read/write mixed OLTP workloads",
+      "Use LSM Trees when write throughput dominates (time-series, clickstream)",
+      "Always design composite indexes matching query filter order"
+    ],
+    "sourceUrl": "https://en.wikipedia.org/wiki/B-tree"
+  },
+  {
+    "id": "tut-websockets-sse",
+    "source": "Tutorial",
+    "title": "Real-Time Web: WebSockets vs Server-Sent Events (SSE) vs Polling",
+    "category": "Web Architecture & Protocols",
+    "difficulty": "Medium",
+    "readTime": "6 min read",
+    "overview": "Modern applications require live data updates. Choosing between bidirectional WebSockets and lightweight unidirectional Server-Sent Events (SSE) depends on your communication flow.",
+    "keyConcepts": [
+      "WebSockets: full-duplex TCP connection initiated via HTTP 101 Upgrade",
+      "SSE: unidirectional server-to-client stream over HTTP with automatic reconnection",
+      "Polling: repetitive HTTP requests wasting bandwidth on header overhead",
+      "SSE operates over standard HTTP/2 multiplexing without firewall traversal issues"
+    ],
+    "detailedExplanation": "If the client needs to stream audio/video or send high-frequency messages back to the server (like in gaming or collaborative drawing), WebSockets is the proper protocol. If the client only consumes updates (stock tickers, LLM token streaming, notifications), Server-Sent Events (SSE) is much simpler, supports HTTP/2 multiplexing natively, and has built-in reconnection.",
+    "codeSnippet": "// Node.js Server-Sent Events (SSE) Stream Handler\nimport { createServer } from 'http';\n\ncreateServer((req, res) => {\n  if (req.url === '/events') {\n    res.writeHead(200, {\n      'Content-Type': 'text/event-stream',\n      'Cache-Control': 'no-cache',\n      'Connection': 'keep-alive',\n    });\n    \n    // Send ping every 2 seconds\n    const interval = setInterval(() => {\n      const payload = JSON.stringify({ time: new Date().toISOString() });\n      res.write(`data: ${payload}\\n\\n`);\n    }, 2000);\n    \n    req.on('close', () => clearInterval(interval));\n  }\n}).listen(4000);",
+    "codeSnippetTitle": "Server-Sent Events (SSE) Stream Server",
+    "language": "TypeScript",
+    "complexity": {
+      "time": "O(1) push latency",
+      "space": "O(1) state per active client connection"
+    },
+    "keyTakeaways": [
+      "Use SSE for LLM streaming and dashboard notifications",
+      "Use WebSockets for multiplayer gaming and live chat",
+      "HTTP/2 multiplexing allows hundreds of SSE streams over a single TCP socket"
+    ],
+    "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events"
+  },
+  {
+    "id": "tut-grpc-protobuf",
+    "source": "Tutorial",
+    "title": "Microservices Communication: High Performance with gRPC and Protocol Buffers",
+    "category": "Microservices & Distributed Systems",
+    "difficulty": "Hard",
+    "readTime": "7 min read",
+    "overview": "REST over JSON is ubiquitous, but binary serialization via Protocol Buffers combined with HTTP/2 transport allows gRPC to achieve up to 7x-10x higher throughput with strict schema contracts.",
+    "keyConcepts": [
+      "Protocol Buffers encode messages into compact binary formats",
+      "Strict contract-first schema definition (.proto files)",
+      "HTTP/2 provides multiplexing, header compression (HPACK), and bi-directional streaming",
+      "Automatic type-safe client and server code generation across 10+ languages"
+    ],
+    "detailedExplanation": "JSON is verbose and requires string parsing CPU cycles. Protocol Buffers serialize typed fields into tag-length-value binary bytes. gRPC leverages HTTP/2 streams to allow multiple RPC calls in flight over one persistent TCP connection.",
+    "codeSnippet": "syntax = \"proto3\";\n\npackage payment;\n\nservice PaymentService {\n  rpc ProcessPayment (PaymentRequest) returns (PaymentResponse);\n  rpc StreamTransactions (TransactionFilter) returns (stream TransactionRecord);\n}\n\nmessage PaymentRequest {\n  string transaction_id = 1;\n  double amount = 2;\n  string currency = 3;\n  int64 timestamp = 4;\n}\n\nmessage PaymentResponse {\n  bool success = 1;\n  string confirmation_code = 2;\n  string error_message = 3;\n}",
+    "codeSnippetTitle": "gRPC Protocol Buffer Schema Definition",
+    "language": "Go",
+    "complexity": {
+      "time": "O(N) serialization in microseconds",
+      "space": "Up to 80% smaller payload size vs JSON"
+    },
+    "keyTakeaways": [
+      "Contract-first approach eliminates API drift between microservice teams",
+      "Ideal for internal service-to-service communication",
+      "Supports 4 communication patterns: Unary, Client streaming, Server streaming, Bidirectional"
+    ],
+    "sourceUrl": "https://grpc.io/docs/what-is-grpc/introduction/"
+  },
+  {
+    "id": "tut-knapsack",
+    "source": "Tutorial",
+    "title": "Dynamic Programming: Demystifying the 0/1 Knapsack Problem",
+    "category": "Algorithms & Optimization",
+    "difficulty": "Medium",
+    "readTime": "7 min read",
+    "overview": "The 0/1 Knapsack Problem is the quintessential dynamic programming paradigm. Given weights and values of items, determine the maximum value that can fit into a knapsack of limited capacity.",
+    "keyConcepts": [
+      "Optimal substructure: optimal solution contains optimal solutions to subproblems",
+      "Overlapping subproblems allow memoization or bottom-up tabulation",
+      "Each item can be either chosen (1) or excluded (0)",
+      "Space optimization reduces 2D table to a 1D array traversing backwards"
+    ],
+    "detailedExplanation": "Let `dp[w]` be the maximum value achievable with capacity `w`. For each item `(weight, value)`, iterate `w` from `capacity` down to `weight`. Transition: `dp[w] = max(dp[w], dp[w - weight] + value)`. Traversing backwards ensures each item is used at most once.",
+    "codeSnippet": "#include <vector>\n#include <algorithm>\n#include <iostream>\n\nint knapsack01(int W, const std::vector<int>& weights, const std::vector<int>& values) {\n    int n = weights.size();\n    // 1D DP array initialized to 0\n    std::vector<int> dp(W + 1, 0);\n    \n    for (int i = 0; i < n; ++i) {\n        // Traverse capacity backwards to prevent using item multiple times\n        for (int w = W; w >= weights[i]; --w) {\n            dp[w] = std::max(dp[w], dp[w - weights[i]] + values[i]);\n        }\n    }\n    \n    return dp[W];\n}\n\nint main() {\n    std::vector<int> values = {60, 100, 120};\n    std::vector<int> weights = {10, 20, 30};\n    int W = 50;\n    std::cout << \"Max Value: \" << knapsack01(W, weights, values) << \"\\n\"; // 220\n    return 0;\n}",
+    "codeSnippetTitle": "Space-Optimized 0/1 Knapsack in C++",
+    "language": "C++",
+    "complexity": {
+      "time": "O(N * W) pseudo-polynomial time",
+      "space": "O(W) 1D array"
+    },
+    "keyTakeaways": [
+      "Traverse backwards for 0/1 Knapsack; traverse forwards for Unbounded Knapsack",
+      "1D array saves O(N * W) space down to O(W)",
+      "Forms basis for subset sum, partition problem, and coin change"
+    ],
+    "sourceUrl": "https://en.wikipedia.org/wiki/Knapsack_problem"
+  },
+  {
+    "id": "tut-cap-theorem",
+    "source": "Tutorial",
+    "title": "System Design: The CAP Theorem and PACELC in Real-World Distributed Systems",
+    "category": "System Design & Distributed Systems",
+    "difficulty": "Hard",
+    "readTime": "8 min read",
+    "overview": "The CAP Theorem states that a distributed data store can guarantee at most two out of Consistency, Availability, and Partition Tolerance. In the real world, network partitions are inevitable, making the choice CP vs AP.",
+    "keyConcepts": [
+      "Consistency (C): Every read receives the most recent write or an error",
+      "Availability (A): Every non-failing node returns a non-error response (without guarantee of latest data)",
+      "Partition Tolerance (P): The system continues operating despite dropped or delayed network packets",
+      "PACELC Extension: Even when no partition occurs (Else), choose between Latency (L) and Consistency (C)"
+    ],
+    "detailedExplanation": "Because network cables can be cut and routers can fail, distributed systems cannot forfeit Partition Tolerance. Thus, under a partition:\n- **CP Systems** (e.g. etcd, ZooKeeper, Google Spanner): Reject writes or wait for consensus to prevent split-brain.\n- **AP Systems** (e.g. Cassandra, DynamoDB): Accept writes on any node and reconcile conflicts later (eventual consistency).",
+    "codeSnippet": "// Pseudo-code demonstrating Quorum Consistency (W + R > N)\n// N = Replicas, W = Write Quorum, R = Read Quorum\n\ninterface Node {\n  id: string;\n  write(key: string, value: any, timestamp: number): Promise<boolean>;\n  read(key: string): Promise<{ value: any; timestamp: number }>;\n}\n\nexport async function strongQuorumRead(\n  nodes: Node[],\n  key: string,\n  R: number\n) {\n  // Query R nodes concurrently\n  const responses = await Promise.all(\n    nodes.slice(0, R).map((node) => node.read(key))\n  );\n  \n  // Pick the record with highest timestamp (Last Write Wins)\n  responses.sort((a, b) => b.timestamp - a.timestamp);\n  return responses[0].value;\n}",
+    "codeSnippetTitle": "Tunable Quorum Consistency (W + R > N)",
+    "language": "TypeScript",
+    "complexity": {
+      "time": "O(R) concurrent network fan-out",
+      "space": "O(1) client buffer"
+    },
+    "keyTakeaways": [
+      "Partition tolerance cannot be abandoned in distributed networks",
+      "Tune quorum parameters (W + R > N) to balance latency against strong consistency",
+      "PACELC provides a complete picture of distributed trade-offs during normal operation"
+    ],
+    "sourceUrl": "https://en.wikipedia.org/wiki/CAP_theorem"
+  }
+]

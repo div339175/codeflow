@@ -1,0 +1,303 @@
+[
+  {
+    "id": "gfg-001",
+    "source": "GeeksforGeeks",
+    "problemNumber": 1,
+    "title": "Subarray with Given Sum",
+    "difficulty": "Medium",
+    "topic": "Arrays · Two Pointers · Sliding Window",
+    "tags": ["Array", "Sliding Window", "Prefix Sum"],
+    "problem": "Given an unsorted array `arr` of size `N` containing non-negative integers, find a continuous sub-array that adds up to a given number `S`. In case of multiple subarrays, return the 1-based indices of the first occurrence from the left.",
+    "examples": [
+      {
+        "input": "N = 5, S = 12, arr[] = {1,2,3,7,5}",
+        "output": "2 4",
+        "explanation": "The sum of elements from 2nd position to 4th position is 2 + 3 + 7 = 12."
+      },
+      {
+        "input": "N = 10, S = 15, arr[] = {1,2,3,4,5,6,7,8,9,10}",
+        "output": "1 5"
+      }
+    ],
+    "constraints": [
+      "1 <= N <= 10^5",
+      "0 <= arr[i] <= 10^9",
+      "0 <= S <= 10^14"
+    ],
+    "approach": "Maintain a variable-sized sliding window defined by `[left, right]`. Accumulate `current_sum += arr[right]`. While `current_sum > S` and `left < right`, subtract `arr[left]` and advance `left`. If `current_sum == S`, return `{left + 1, right + 1}` (1-based index).",
+    "solution": "#include <vector>\n\nclass Solution {\npublic:\n    std::vector<int> subarraySum(std::vector<int> arr, int n, long long s) {\n        long long current_sum = 0;\n        int left = 0;\n        \n        for (int right = 0; right < n; ++right) {\n            current_sum += arr[right];\n            \n            while (current_sum > s && left < right) {\n                current_sum -= arr[left++];\n            }\n            \n            if (current_sum == s) {\n                return {left + 1, right + 1}; // 1-based index\n            }\n        }\n        \n        return {-1};\n    }\n};",
+    "language": "C++",
+    "complexity": {
+      "time": "O(N) — each element is added and removed at most once",
+      "space": "O(1) — constant extra space"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/subarray-with-given-sum-1587115621/1"
+  },
+  {
+    "id": "gfg-002",
+    "source": "GeeksforGeeks",
+    "problemNumber": 2,
+    "title": "Missing Number in Array",
+    "difficulty": "Easy",
+    "topic": "Arrays · Bit Manipulation · Math",
+    "tags": ["Array", "Math", "Bitwise XOR"],
+    "problem": "Given an array of size `N-1` such that it only contains distinct integers in the range of `1` to `N`. Find the missing element.",
+    "examples": [
+      {
+        "input": "N = 5, A[] = {1,2,3,5}",
+        "output": "4"
+      },
+      {
+        "input": "N = 2, A[] = {1}",
+        "output": "2"
+      }
+    ],
+    "constraints": [
+      "1 <= N <= 10^6",
+      "1 <= A[i] <= N"
+    ],
+    "approach": "We can use XOR bitwise manipulation to avoid integer overflow issues with large N. Compute `XOR_all = 1 ^ 2 ^ ... ^ N` and `XOR_arr = A[0] ^ A[1] ^ ... ^ A[N-2]`. The missing number is `XOR_all ^ XOR_arr` because identical numbers cancel out to 0 (`x ^ x = 0`).",
+    "solution": "class Solution:\n    def missingNumber(self, n: int, arr: list[int]) -> int:\n        xor_total = 0\n        for i in range(1, n + 1):\n            xor_total ^= i\n            \n        xor_arr = 0\n        for num in arr:\n            xor_arr ^= num\n            \n        return xor_total ^ xor_arr",
+    "language": "Python",
+    "complexity": {
+      "time": "O(N) — single pass to XOR numbers",
+      "space": "O(1) — no extra memory used"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/missing-number-in-array1416/1"
+  },
+  {
+    "id": "gfg-003",
+    "source": "GeeksforGeeks",
+    "problemNumber": 3,
+    "title": "Detect Loop in Linked List",
+    "difficulty": "Medium",
+    "topic": "Linked List · Two Pointers · Floyd's Cycle Finding",
+    "tags": ["Linked List", "Fast & Slow Pointers"],
+    "problem": "Given the head of a singly linked list, determine if the linked list has a loop. A loop exists if a node can be reached again by continuously traversing following the `next` pointer.",
+    "examples": [
+      {
+        "input": "Linked list: 1 -> 3 -> 4 -> (points back to 3)",
+        "output": "true",
+        "explanation": "A loop is present."
+      }
+    ],
+    "constraints": [
+      "1 <= N <= 10^4",
+      "1 <= Data on Node <= 10^3"
+    ],
+    "approach": "Floyd's Tortoise and Hare algorithm. Initialize two pointers, `slow` and `fast`, at the head. Advance `slow` by 1 step and `fast` by 2 steps. If there is a loop, `fast` will eventually lap and meet `slow`. If `fast` reaches `null`, the list is linear.",
+    "solution": "class Solution {\n    public static boolean detectLoop(Node head) {\n        if (head == null || head.next == null) return false;\n        \n        Node slow = head;\n        Node fast = head;\n        \n        while (fast != null && fast.next != null) {\n            slow = slow.next;\n            fast = fast.next.next;\n            \n            if (slow == fast) {\n                return true; // Loop detected\n            }\n        }\n        \n        return false;\n    }\n}",
+    "language": "Java",
+    "complexity": {
+      "time": "O(N) — fast pointer catches slow within cycle length",
+      "space": "O(1) — only two pointers maintained"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/detect-loop-in-linked-list/1"
+  },
+  {
+    "id": "gfg-004",
+    "source": "GeeksforGeeks",
+    "problemNumber": 4,
+    "title": "Kth Smallest Element",
+    "difficulty": "Medium",
+    "topic": "Array · Heap · QuickSelect",
+    "tags": ["Heap", "Quickselect", "Array"],
+    "problem": "Given an array `arr[]` of `N` distinct integers and a number `K`, where `K` is smaller than the size of the array. Find the `K-th` smallest element in the given array.",
+    "examples": [
+      {
+        "input": "N = 6, arr[] = 7 10 4 3 20 15, K = 3",
+        "output": "7",
+        "explanation": "3rd smallest element is 7 (sorted array: 3, 4, 7, 10, 15, 20)."
+      }
+    ],
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= arr[i] <= 10^5",
+      "1 <= K <= N"
+    ],
+    "approach": "Maintain a Max-Heap of size `K`. Push elements into the heap. Whenever the heap size exceeds `K`, pop the root (the maximum among them). After inspecting all `N` elements, the top of the max-heap will be the `K-th` smallest element.",
+    "solution": "#include <vector>\n#include <queue>\n\nclass Solution {\npublic:\n    int kthSmallest(int arr[], int l, int r, int k) {\n        std::priority_queue<int> maxHeap;\n        \n        for (int i = l; i <= r; ++i) {\n            maxHeap.push(arr[i]);\n            if (maxHeap.size() > static_cast<size_t>(k)) {\n                maxHeap.pop();\n            }\n        }\n        \n        return maxHeap.top();\n    }\n};",
+    "language": "C++",
+    "complexity": {
+      "time": "O(N log K) — maintaining a heap of size K",
+      "space": "O(K) — for storing K elements in heap"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/kth-smallest-element5635/1"
+  },
+  {
+    "id": "gfg-005",
+    "source": "GeeksforGeeks",
+    "problemNumber": 5,
+    "title": "Parenthesis Checker",
+    "difficulty": "Easy",
+    "topic": "String · Stack · Data Structures",
+    "tags": ["Stack", "String"],
+    "problem": "Given an expression string `x`. Examine whether the pairs and the orders of `{`, `}`, `(`, `)`, `[`, `]` are correct in exp.",
+    "examples": [
+      {
+        "input": "{([])}",
+        "output": "true"
+      },
+      {
+        "input": "([]",
+        "output": "false"
+      }
+    ],
+    "constraints": [
+      "1 <= |x| <= 3*10^4"
+    ],
+    "approach": "Traverse each character. If it is an opening delimiter, push it to stack. If it is a closing delimiter, check if stack is empty or if popped opening delimiter does not match. At end, stack must be empty.",
+    "solution": "export function ispar(x: string): boolean {\n  const stack: string[] = [];\n  const pairs: Record<string, string> = { ')': '(', '}': '{', ']': '[' };\n\n  for (const ch of x) {\n    if (ch === '(' || ch === '{' || ch === '[') {\n      stack.push(ch);\n    } else if (ch === ')' || ch === '}' || ch === ']') {\n      if (stack.length === 0 || stack.pop() !== pairs[ch]) {\n        return false;\n      }\n    }\n  }\n\n  return stack.length === 0;\n}",
+    "language": "TypeScript",
+    "complexity": {
+      "time": "O(N) — linear scan of string",
+      "space": "O(N) — stack memory"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/parenthesis-checker2744/1"
+  },
+  {
+    "id": "gfg-006",
+    "source": "GeeksforGeeks",
+    "problemNumber": 6,
+    "title": "Next Greater Element",
+    "difficulty": "Medium",
+    "topic": "Array · Stack · Monotonic Stack",
+    "tags": ["Monotonic Stack", "Array"],
+    "problem": "Given an array `arr[ ]` of size `N` having elements, the task is to find the next greater element for each element of the array in order of their appearance in the array. If no next greater element exists, output `-1`.",
+    "examples": [
+      {
+        "input": "N = 4, arr[] = [1 3 2 4]",
+        "output": "3 4 4 -1"
+      },
+      {
+        "input": "N = 5, arr[] = [6 8 0 1 3]",
+        "output": "8 -1 1 3 -1"
+      }
+    ],
+    "constraints": [
+      "1 <= N <= 10^6",
+      "0 <= arr[i] <= 10^18"
+    ],
+    "approach": "Traverse array from right to left while maintaining a monotonic decreasing stack. For current element `arr[i]`, pop all elements from stack that are `<= arr[i]`. If stack is non-empty, top is next greater element; otherwise `-1`. Push current element onto stack.",
+    "solution": "class Solution {\npublic:\n    vector<long long> nextLargerElement(vector<long long> arr, int n) {\n        vector<long long> result(n);\n        stack<long long> st;\n        \n        for (int i = n - 1; i >= 0; --i) {\n            while (!st.empty() && st.top() <= arr[i]) {\n                st.pop();\n            }\n            \n            result[i] = st.empty() ? -1 : st.top();\n            st.push(arr[i]);\n        }\n        \n        return result;\n    }\n};",
+    "language": "C++",
+    "complexity": {
+      "time": "O(N) — each element pushed and popped at most once",
+      "space": "O(N) — stack stores up to N elements"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/next-larger-element-1587115620/1"
+  },
+  {
+    "id": "gfg-007",
+    "source": "GeeksforGeeks",
+    "problemNumber": 7,
+    "title": "Check for BST",
+    "difficulty": "Easy",
+    "topic": "Tree · Binary Search Tree · Inorder Traversal",
+    "tags": ["BST", "Tree", "Traversal"],
+    "problem": "Given the root of a binary tree. Check whether it is a BST or not. Note: We consider that either keys in left subtree are smaller than root key and keys in right subtree are greater than root key.",
+    "examples": [
+      {
+        "input": "   2\n /    \\\n1      3",
+        "output": "1 (True)"
+      }
+    ],
+    "constraints": [
+      "0 <= Number of nodes <= 10^5",
+      "1 <= Data on node <= 10^5"
+    ],
+    "approach": "An Inorder Traversal of a valid Binary Search Tree always produces a strictly sorted ascending sequence. We can perform an inorder traversal while keeping track of `prev_val`. If current node's value is `<= prev_val`, the tree is not a BST.",
+    "solution": "class Solution:\n    def isBST(self, root) -> bool:\n        prev = float('-inf')\n        \n        def inorder(node):\n            nonlocal prev\n            if not node:\n                return True\n            if not inorder(node.left):\n                return False\n            if node.data <= prev:\n                return False\n            prev = node.data\n            return inorder(node.right)\n            \n        return inorder(root)",
+    "language": "Python",
+    "complexity": {
+      "time": "O(N) — visits each node once",
+      "space": "O(H) — call stack bounded by tree height"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/check-for-bst/1"
+  },
+  {
+    "id": "gfg-008",
+    "source": "GeeksforGeeks",
+    "problemNumber": 8,
+    "title": "Rat in a Maze Problem",
+    "difficulty": "Medium",
+    "topic": "Backtracking · Matrix · Recursion",
+    "tags": ["Backtracking", "Matrix", "DFS"],
+    "problem": "Consider a rat placed at `(0, 0)` in a square matrix `m` of order `n*n`. It has to reach destination `(n-1, n-1)`. Find all possible paths that the rat can take to reach from source to destination. Directions are 'U'(up), 'D'(down), 'L'(left), 'R'(right). `0` means blocked and `1` means open.",
+    "examples": [
+      {
+        "input": "N = 4, m[][] = {{1, 0, 0, 0}, {1, 1, 0, 1}, {1, 1, 0, 0}, {0, 1, 1, 1}}",
+        "output": "DDRDRR DRDDRR"
+      }
+    ],
+    "constraints": [
+      "2 <= N <= 5",
+      "0 <= m[i][j] <= 1"
+    ],
+    "approach": "Backtracking DFS with 4 directional steps in lexicographical order: `D` (down), `L` (left), `R` (right), `U` (up). Mark the current cell visited (e.g. `m[r][c] = 0`), recurse, then unmark upon return (`m[r][c] = 1`).",
+    "solution": "class Solution {\n    void solve(int r, int c, vector<vector<int>>& m, int n, string path, vector<string>& ans) {\n        if (r == n - 1 && c == n - 1) {\n            ans.push_back(path);\n            return;\n        }\n        \n        // Directions: D, L, R, U (lexicographical order)\n        int dr[] = {1, 0, 0, -1};\n        int dc[] = {0, -1, 1, 0};\n        char dir[] = {'D', 'L', 'R', 'U'};\n        \n        m[r][c] = 0; // Mark visited\n        \n        for (int i = 0; i < 4; ++i) {\n            int nr = r + dr[i];\n            int nc = c + dc[i];\n            if (nr >= 0 && nr < n && nc >= 0 && nc < n && m[nr][nc] == 1) {\n                solve(nr, nc, m, n, path + dir[i], ans);\n            }\n        }\n        \n        m[r][c] = 1; // Backtrack\n    }\n    \npublic:\n    vector<string> findPath(vector<vector<int>>& m, int n) {\n        vector<string> ans;\n        if (m[0][0] == 0 || m[n-1][n-1] == 0) return ans;\n        solve(0, 0, m, n, \"\", ans);\n        return ans;\n    }\n};",
+    "language": "C++",
+    "complexity": {
+      "time": "O(4^(N^2)) — worst-case exploration of all maze paths",
+      "space": "O(N * N) — recursion depth bounded by total cells"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/rat-in-a-maze-problem/1"
+  },
+  {
+    "id": "gfg-009",
+    "source": "GeeksforGeeks",
+    "problemNumber": 9,
+    "title": "Minimum Number of Jumps",
+    "difficulty": "Medium",
+    "topic": "Array · Dynamic Programming · Greedy",
+    "tags": ["Greedy", "Array"],
+    "problem": "Given an array `arr[]` of size `n` of non-negative integers. Each array element represents the maximum length of the jumps that can be made forward from that element. Find the minimum number of jumps to reach the end of the array from start (index 0). If an element is 0, they cannot move through that element. Return -1 if impossible.",
+    "examples": [
+      {
+        "input": "n = 11, arr[] = {1, 3, 5, 8, 9, 2, 6, 7, 6, 8, 9}",
+        "output": "3",
+        "explanation": "0 -> 1 -> 4 -> 10 (3 jumps)"
+      }
+    ],
+    "constraints": [
+      "1 <= n <= 10^7",
+      "0 <= arr[i] <= 10^7"
+    ],
+    "approach": "Greedy BFS interval approach. Track `maxReach` (farthest reachable index), `steps` remaining in current jump range, and `jumps` count. When `i` reaches current jump boundary, increment `jumps` and update range.",
+    "solution": "func minJumps(arr []int, n int) int {\n    if n <= 1 {\n        return 0\n    }\n    if arr[0] == 0 {\n        return -1\n    }\n    \n    maxReach := arr[0]\n    step := arr[0]\n    jump := 1\n    \n    for i := 1; i < n; i++ {\n        if i == n - 1 {\n            return jump\n        }\n        \n        if i + arr[i] > maxReach {\n            maxReach = i + arr[i]\n        }\n        \n        step--\n        \n        if step == 0 {\n            jump++\n            if i >= maxReach {\n                return -1\n            }\n            step = maxReach - i\n        }\n    }\n    \n    return -1\n}",
+    "language": "Go",
+    "complexity": {
+      "time": "O(N) — single forward pass through array",
+      "space": "O(1) — constant variable tracking"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/minimum-number-of-jumps-1587115620/1"
+  },
+  {
+    "id": "gfg-010",
+    "source": "GeeksforGeeks",
+    "problemNumber": 10,
+    "title": "Longest Common Subsequence",
+    "difficulty": "Medium",
+    "topic": "Dynamic Programming · Strings",
+    "tags": ["Dynamic Programming", "Strings"],
+    "problem": "Given two strings `s1` and `s2`, find the length of the longest subsequence present in both of them. A subsequence is a sequence that appears in the same relative order, but not necessarily contiguous.",
+    "examples": [
+      {
+        "input": "s1 = \"ABCDGH\", s2 = \"AEDFHR\"",
+        "output": "3",
+        "explanation": "LCS is \"ADH\" of length 3."
+      }
+    ],
+    "constraints": [
+      "1 <= |s1|, |s2| <= 1000"
+    ],
+    "approach": "2D Dynamic Programming. Let `dp[i][j]` be the length of LCS of `s1[0..i-1]` and `s2[0..j-1]`. If `s1[i-1] == s2[j-1]`, then `dp[i][j] = 1 + dp[i-1][j-1]`. Otherwise, `dp[i][j] = max(dp[i-1][j], dp[i][j-1])`.",
+    "solution": "class Solution {\npublic:\n    int lcs(int n, int m, string s1, string s2) {\n        vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));\n        \n        for (int i = 1; i <= n; ++i) {\n            for (int j = 1; j <= m; ++j) {\n                if (s1[i - 1] == s2[j - 1]) {\n                    dp[i][j] = 1 + dp[i - 1][j - 1];\n                } else {\n                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);\n                }\n            }\n        }\n        \n        return dp[n][m];\n    }\n};",
+    "language": "C++",
+    "complexity": {
+      "time": "O(N * M) — nested loop through grid",
+      "space": "O(N * M) — DP table size (can be optimized to O(M))"
+    },
+    "sourceUrl": "https://www.geeksforgeeks.org/problems/longest-common-subsequence-1587115620/1"
+  }
+]
